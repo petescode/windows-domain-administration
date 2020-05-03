@@ -63,6 +63,7 @@ Clear-Host
 Write-Host "`nPossible matches for '$SCRIPT:search_string':" -BackgroundColor DarkGray
 $array | Out-Host
 
+
 # this do/until loop makes it so invalid input is ignored - the user can only input a real index number of the array
 [int]$select = 0
 Do{
@@ -71,3 +72,20 @@ Do{
         # do nothing, including "do nothing" with any error messages
     }
 } Until (($select -gt 0) -and ($select -le $array.Length))
+
+
+# getting name and description from the selected server - they need to be at script level so we can use inside a function later
+$SCRIPT:server_name = $array[$select-1].Name
+$SCRIPT:server_desc = $array[$select-1].Description
+
+# test that server is powered on and responsive
+if(!(Test-Connection -ComputerName $SCRIPT:server_name -Count 2 -Quiet)){
+    Write-Host "`n$SCRIPT:server_name ($SCRIPT:server_desc) did not respond to ping. Exiting." -BackgroundColor Black -ForegroundColor Red
+    Start-Sleep 5
+    EXIT
+}
+
+function Invoke-MainMenu{
+
+}
+
