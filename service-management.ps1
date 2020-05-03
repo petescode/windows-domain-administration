@@ -44,4 +44,18 @@ while ($NULL -eq $matches){
     $matches = $win_servers | Where-Object {($_.Name -like "*$SCRIPT:search_string*") -or ($_.Description -like "*$SCRIPT:search_string*")} | Sort-Object Name
 }
 
-$matches | Out-Host
+#$matches | Out-Host
+
+# re-sorting $matches into a new array allows us to add a number column to be used later for selection
+$array = @()
+[int]$count = 0
+$matches | ForEach-Object{
+    $count++
+    $object = [PSCustomObject]@{
+        Num = $count
+        Name = $_.Name
+        Description = $_.Description
+    }
+    $array += $object
+}
+$array | Out-Host
