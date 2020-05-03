@@ -2,7 +2,14 @@
 PowerShell 5.1
 
 Notes:
+    ou-list.txt should have Active Directory Organizational Unit paths like this:
+        OU=Windows,OU=Servers,OU=Canada,DC=FABRIKAM,DC=COM
+        OU=Windows,OU=Servers,OU=India,DC=FABRIKAM,DC=COM
+        OU=Windows,OU=Servers,OU=Australia,DC=FABRIKAM,DC=COM
+
     For $matches variable, we don't want to declare variable type because it will be different if 1 match is found or if more-than-1 is found
+
+    Use $SCRIPT: instead of $GLOBAL: to avoid the variables persisting in the shell after the script exits
 #>
 Clear-Host
 Write-Host
@@ -16,13 +23,15 @@ $ou_list | ForEach-Object {
     [array]$win_servers += Get-ADComputer -SearchBase $_ -Filter {OperatingSystem -like "*Windows Server*"} -Properties OperatingSystem,Description
 }
 
-# search & save server name
-[string]$search_string = ""
-while($search_string -eq ""){
-    [string]$search_string = Read-Host "Search servers by keyword (matches Name or Description)"
+# move this to top of script?
+function Get-SearchString{
+    [string]$SCRIPT:search_string = ""
+    Do{
+        [string]$SCRIPT:search_string = Read-Host "Search servers by keyword (matches Name or Description)"
+    } Until ($SCRIPT:search_string -ne "")
 }
 
 # get a list of servers that match the search string so user can choose later
-$matches = $search_string | Where-Object {($_.Name -like "*$search_string*") -or ($_.Description -like "*$search_string*")}
+$matches = $win_servers | Where-Object {($_.Name -like "*$SCRIPT:search_string*") -or ($_.Description -like "*$SCRIPT:search_string*")} | Sort-Object Name
 
 $matches | Out-Host
