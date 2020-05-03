@@ -34,4 +34,14 @@ function Get-SearchString{
 # get a list of servers that match the search string so user can choose later
 $matches = $win_servers | Where-Object {($_.Name -like "*$SCRIPT:search_string*") -or ($_.Description -like "*$SCRIPT:search_string*")} | Sort-Object Name
 
+#$matches | Out-Host
+
+# catch if no matches are found, give another opportunity to search
+while ($NULL -eq $matches){
+    Write-Host "`nNo matches for '$SCRIPT:search_string' found! Try again." -BackgroundColor Black -ForegroundColor Yellow; Start-Sleep 3
+    Clear-Host; Write-Host
+    Get-SearchString
+    $matches = $win_servers | Where-Object {($_.Name -like "*$SCRIPT:search_string*") -or ($_.Description -like "*$SCRIPT:search_string*")} | Sort-Object Name
+}
+
 $matches | Out-Host
