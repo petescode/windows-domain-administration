@@ -58,4 +58,16 @@ $matches | ForEach-Object{
     }
     $array += $object
 }
+
+Clear-Host
+Write-Host "`nPossible matches for '$SCRIPT:search_string':" -BackgroundColor DarkGray
 $array | Out-Host
+
+# this do/until loop makes it so invalid input is ignored - the user can only input a real index number of the array
+[int]$select = 0
+Do{
+    Try{ $select = Read-Host "Select a server" }
+    Catch{
+        # do nothing, including "do nothing" with any error messages
+    }
+} Until (($select -gt 0) -and ($select -le $array.Length))
