@@ -86,6 +86,19 @@ if(!(Test-Connection -ComputerName $SCRIPT:server_name -Count 2 -Quiet)){
 }
 
 function Invoke-MainMenu{
+    Clear-Host
+    Write-Host "`nServer: $SCRIPT:server_name ($SCRIPT:server_desc)" -BackgroundColor DarkGray
+    Write-Host "1. Show all services"
+    Write-Host "2. Show running services"
+    Write-Host "3. Show stopped services"
+    Write-Host "4. Filter services by keyword"
+    Write-Host "Q. Quit"
 
+    [string]$select = Read-Host "`nSelect an option"
+    while("1","2","3","4","q" -notcontains $select){ [string]$select = Read-Host "Select an option" }
+
+    $select.GetType()
+    $select | Out-Host
 }
 
+Invoke-MainMenu
