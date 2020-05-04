@@ -11,6 +11,11 @@ Notes:
     For $matches variable, we don't want to declare the type because it will be different if 1 match is found or if more-than-1 is found
 
     Use $SCRIPT: instead of $GLOBAL: to avoid the variables persisting in the shell after the script exits
+
+    In Invoke-ServiceMenu...
+        The use of -PassThru and Out-Host on the same line was necessary to get the shell output desired
+
+    Although Invoke-MainMenu and Invoke-ServiceMenu reference each other neither function is actually called until both have already been declared
 #>
 Clear-Host
 Write-Host
@@ -35,7 +40,6 @@ function Get-SearchString{
 # get a list of servers that match the search string so user can choose later
 $matches = $win_servers | Where-Object {($_.Name -like "*$SCRIPT:search_string*") -or ($_.Description -like "*$SCRIPT:search_string*")} | Sort-Object Name
 
-#$matches | Out-Host
 
 # catch if no matches are found, give another opportunity to search
 while ($NULL -eq $matches){
@@ -44,8 +48,6 @@ while ($NULL -eq $matches){
     Get-SearchString
     $matches = $win_servers | Where-Object {($_.Name -like "*$SCRIPT:search_string*") -or ($_.Description -like "*$SCRIPT:search_string*")} | Sort-Object Name
 }
-
-#$matches | Out-Host
 
 # re-sorting $matches into a new array allows us to add a number column to be used later for selection
 $array = @()
@@ -174,10 +176,10 @@ function Invoke-MainMenu{
 
     # select the service and save to a variable we can use later
     $SCRIPT:the_service = Get-Service -Name $SCRIPT:services[$select-1].Name -ComputerName $SCRIPT:server_name
-}
 
-Invoke-MainMenu
-#$SCRIPT:the_service | out-host
+    # start the next menu!
+    Invoke-ServiceMenu
+}
 
 
 # menu for what to do with selected service; allow option to go back to main menu
@@ -193,12 +195,16 @@ function Invoke-ServiceMenu{
     [string]$select = Read-Host "Select an option"
     while("1","2","3","4","q" -notcontains $select){ [string]$select = Read-Host "Select an option" }
 
+    # option 1 uses a different method than the rest just to show this is possible - either way works
     switch($select){
-        '1'{}
-        '2'{}
-        '3'{}
-        '4'{}
+        '1'{ $SCRIPT:the_service | Start-Service -PassThru -Verbose | Out-Host }
+        '2'{ Stop-Service -InputObject $SCRIPT:the_service -PassThru -Verbose -Force | Out-Host }
+        '3'{ Restart-Service -InputObject $SCRIPT:the_service -PassThru -Verbose -Force | Out-Host }
+        '4'{ Invoke-MainMenu }
         'q'{ EXIT }
     }
 }
 
+Invoke-MainMenu
+
+Read-Host "`nPress any key to exit"
