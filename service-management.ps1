@@ -143,12 +143,20 @@ function Invoke-MainMenu{
             }
         }
         '4'{
-            Clear-Host
-            Write-Host
-            $keyword = ""
-            while($keyword -eq ""){ $keyword = Read-Host "Enter a search keyword" }
+            Do{
+                Clear-Host
+                Write-Host
+                $keyword = ""
+                while($keyword -eq ""){ $keyword = Read-Host "Enter a search keyword" }
 
-            Get-Service -ComputerName $SCRIPT:server_name | Where-Object {$_.DisplayName -like "*$keyword*"} | ForEach-Object{
+                $test = Get-Service -ComputerName $SCRIPT:server_name | Where-Object {$_.DisplayName -like "*$keyword*"}
+                if($NULL -eq $test){
+                    Write-Host "`nNo services match the keyword! Try again." -BackgroundColor Black -ForegroundColor Yellow
+                    Start-Sleep 3
+                }
+            } Until ($NULL -ne $test) # test is not null (a service was found that matched keyword)
+
+            $test | ForEach-Object{
                 $count++
                 $object = [PSCustomObject]@{
                     Num         = $count
