@@ -16,7 +16,7 @@ Clear-Host
 Write-Host
 Import-Module ActiveDirectory
 
-[string]$info_file = $MyInvocation.MyCommand.Name.Split(".")[0] + "_INFO.txt"
+[string]$info_file = $MyInvocation.MyCommand.Name.Split(".")[0] + "-INFO.txt"
 [array]$ou_list = $(Get-Content .\$info_file)
 
 # create array containing all windows servers from each OU
@@ -178,4 +178,8 @@ function Invoke-MainMenu{
 
 Invoke-MainMenu
 #$SCRIPT:the_service | out-host
+
+
+# menu for what to do with selected service; allow option to go back to main menu
+
 
