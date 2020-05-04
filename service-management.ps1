@@ -1,8 +1,10 @@
 <#
-PowerShell 5.1
-
+Author: Pete Wood
+Purpose: Connect to remote Active Directory Windows Server and start/stop/restart a service
 Notes:
-    In the same directory there should be a text file in the naming convention "name-of-script_INFO.txt"
+    Developed using PowerShell 5.1
+
+    In the same directory there should be a text file in the naming convention "name-of-script-INFO.txt"
         It should have Active Directory Organizational Unit paths like this:
             OU=Windows,OU=Servers,OU=Canada,DC=FABRIKAM,DC=COM
             OU=Windows,OU=Servers,OU=India,DC=FABRIKAM,DC=COM
@@ -21,6 +23,13 @@ Clear-Host
 Write-Host
 Import-Module ActiveDirectory
 
+function Get-SearchString{
+    [string]$SCRIPT:search_string = ""
+    Do{
+        [string]$SCRIPT:search_string = Read-Host "Search servers by keyword (matches Name or Description)"
+    } Until ($SCRIPT:search_string -ne "")
+}
+
 [string]$info_file = $MyInvocation.MyCommand.Name.Split(".")[0] + "-INFO.txt"
 [array]$ou_list = $(Get-Content .\$info_file)
 
@@ -29,17 +38,10 @@ $ou_list | ForEach-Object {
     [array]$win_servers += Get-ADComputer -SearchBase $_ -Filter {OperatingSystem -like "*Windows Server*"} -Properties OperatingSystem,Description
 }
 
-# move this to top of script?
-function Get-SearchString{
-    [string]$SCRIPT:search_string = ""
-    Do{
-        [string]$SCRIPT:search_string = Read-Host "Search servers by keyword (matches Name or Description)"
-    } Until ($SCRIPT:search_string -ne "")
-}
+Get-SearchString
 
 # get a list of servers that match the search string so user can choose later
 $matches = $win_servers | Where-Object {($_.Name -like "*$SCRIPT:search_string*") -or ($_.Description -like "*$SCRIPT:search_string*")} | Sort-Object Name
-
 
 # catch if no matches are found, give another opportunity to search
 while ($NULL -eq $matches){
@@ -66,16 +68,12 @@ Clear-Host
 Write-Host "`nPossible matches for '$SCRIPT:search_string':" -BackgroundColor DarkGray
 $array | Out-Host
 
-
 # this do/until loop makes it so invalid input is ignored - the user can only input a real index number of the array
 [int]$select = 0
 Do{
     Try{ $select = Read-Host "Select a server" }
-    Catch{
-        # do nothing, including "do nothing" with any error messages
-    }
+    Catch{} # do nothing, including "do nothing" with any error messages
 } Until (($select -gt 0) -and ($select -le $array.Length))
-
 
 # getting name and description from the selected server - they need to be at script level so we can use inside a function later
 $SCRIPT:server_name = $array[$select-1].Name
@@ -88,6 +86,7 @@ if(!(Test-Connection -ComputerName $SCRIPT:server_name -Count 2 -Quiet)){
     EXIT
 }
 
+# declare function for the main menu (sorting through services)
 function Invoke-MainMenu{
     Clear-Host
     Write-Host "`nServer: $SCRIPT:server_name ($SCRIPT:server_desc)`n" -BackgroundColor DarkGray
@@ -164,14 +163,11 @@ function Invoke-MainMenu{
     }
     $SCRIPT:services | Out-Host
 
-
     # now make a selection of which service you want to act on
     [int]$select = 0
     Do{
         Try{ $select = Read-Host "Select a service" }
-        Catch{
-            # do nothing, including "do nothing" with any error messages
-        }
+        Catch{} # do nothing, including "do nothing" with any error messages
     } Until (($select -gt 0) -and ($select -le $SCRIPT:services.Length))
 
     # select the service and save to a variable we can use later
