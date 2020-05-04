@@ -97,9 +97,6 @@ function Invoke-MainMenu{
     [string]$select = Read-Host "`nSelect an option"
     while("1","2","3","4","q" -notcontains $select){ [string]$select = Read-Host "Select an option" }
 
-    #$select.GetType()
-    #$select | Out-Host
-
     [int]$count = 0
     $SCRIPT:services = @()
 
@@ -117,7 +114,6 @@ function Invoke-MainMenu{
                 $SCRIPT:services += $object
             }
         }
-
         '2'{
             Clear-Host
             Get-Service -ComputerName $SCRIPT:server_name | Where-Object {$_.Status -eq 'Running'} | ForEach-Object{
@@ -131,7 +127,6 @@ function Invoke-MainMenu{
                 $SCRIPT:services += $object
             }
         }
-
         '3'{
             Clear-Host
             Get-Service -ComputerName $SCRIPT:server_name | Where-Object {$_.Status -eq 'Stopped'} | ForEach-Object{
@@ -145,14 +140,25 @@ function Invoke-MainMenu{
                 $SCRIPT:services += $object
             }
         }
+        '4'{
+            Clear-Host
+            Write-Host
+            $keyword = ""
+            while($keyword -eq ""){ $keyword = Read-Host "Enter a search keyword" }
 
-        '4'{}
-
-        'q'{}
-
-
+            Get-Service -ComputerName $SCRIPT:server_name | Where-Object {$_.DisplayName -like "*$keyword*"} | ForEach-Object{
+                $count++
+                $object = [PSCustomObject]@{
+                    Num         = $count
+                    Status      = $_.Status
+                    Name        = $_.Name
+                    DisplayName = $_.DisplayName
+                }
+                $SCRIPT:services += $object
+            }
+        }
+        'q'{ EXIT }
     }
-
     $SCRIPT:services | Out-Host
 }
 
