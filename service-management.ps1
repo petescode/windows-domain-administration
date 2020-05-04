@@ -118,9 +118,33 @@ function Invoke-MainMenu{
             }
         }
 
-        '2'{}
+        '2'{
+            Clear-Host
+            Get-Service -ComputerName $SCRIPT:server_name | Where-Object {$_.Status -eq 'Running'} | ForEach-Object{
+                $count++
+                $object = [PSCustomObject]@{
+                    Num         = $count
+                    Status      = $_.Status
+                    Name        = $_.Name
+                    DisplayName = $_.DisplayName
+                }
+                $SCRIPT:services += $object
+            }
+        }
 
-        '3'{}
+        '3'{
+            Clear-Host
+            Get-Service -ComputerName $SCRIPT:server_name | Where-Object {$_.Status -eq 'Stopped'} | ForEach-Object{
+                $count++
+                $object = [PSCustomObject]@{
+                    Num         = $count
+                    Status      = $_.Status
+                    Name        = $_.Name
+                    DisplayName = $_.DisplayName
+                }
+                $SCRIPT:services += $object
+            }
+        }
 
         '4'{}
 
