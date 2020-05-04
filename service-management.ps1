@@ -181,5 +181,24 @@ Invoke-MainMenu
 
 
 # menu for what to do with selected service; allow option to go back to main menu
+function Invoke-ServiceMenu{
+    Clear-Host
+    Write-Host "`n$($SCRIPT:the_service.Name) @ $SCRIPT:server_name`n" -BackgroundColor DarkGray
+    Write-Host "1. Start this service"
+    Write-Host "2. Stop this service"
+    Write-Host "3. Restart this service"
+    Write-Host "4. Go back to previous menu"
+    Write-Host "Q. Quit"
+    Write-Host
+    [string]$select = Read-Host "Select an option"
+    while("1","2","3","4","q" -notcontains $select){ [string]$select = Read-Host "Select an option" }
 
+    switch($select){
+        '1'{}
+        '2'{}
+        '3'{}
+        '4'{}
+        'q'{ EXIT }
+    }
+}
 
