@@ -160,6 +160,20 @@ function Invoke-MainMenu{
         'q'{ EXIT }
     }
     $SCRIPT:services | Out-Host
+
+
+    # now make a selection of which service you want to act on
+    [int]$select = 0
+    Do{
+        Try{ $select = Read-Host "Select a service" }
+        Catch{
+            # do nothing, including "do nothing" with any error messages
+        }
+    } Until (($select -gt 0) -and ($select -le $SCRIPT:services.Length))
+
+    # select the service and save to a variable we can use later
+    $SCRIPT:the_service = Get-Service -Name $SCRIPT:services[$select-1].Name -ComputerName $SCRIPT:server_name
 }
 
 Invoke-MainMenu
+$SCRIPT:the_service | out-host
