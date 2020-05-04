@@ -2,12 +2,13 @@
 PowerShell 5.1
 
 Notes:
-    ou-list.txt should have Active Directory Organizational Unit paths like this:
-        OU=Windows,OU=Servers,OU=Canada,DC=FABRIKAM,DC=COM
-        OU=Windows,OU=Servers,OU=India,DC=FABRIKAM,DC=COM
-        OU=Windows,OU=Servers,OU=Australia,DC=FABRIKAM,DC=COM
+    In the same directory there should be a text file in the naming convention "name-of-script_INFO.txt"
+        It should have Active Directory Organizational Unit paths like this:
+            OU=Windows,OU=Servers,OU=Canada,DC=FABRIKAM,DC=COM
+            OU=Windows,OU=Servers,OU=India,DC=FABRIKAM,DC=COM
+            OU=Windows,OU=Servers,OU=Australia,DC=FABRIKAM,DC=COM
 
-    For $matches variable, we don't want to declare variable type because it will be different if 1 match is found or if more-than-1 is found
+    For $matches variable, we don't want to declare the type because it will be different if 1 match is found or if more-than-1 is found
 
     Use $SCRIPT: instead of $GLOBAL: to avoid the variables persisting in the shell after the script exits
 #>
@@ -15,8 +16,8 @@ Clear-Host
 Write-Host
 Import-Module ActiveDirectory
 
-# have 1 or more AD OUs listed in a text file named "ou-list.txt", in the current working directory, and they get imported here
-[array]$ou_list = $(Get-Content .\ou-list.txt)
+[string]$info_file = $MyInvocation.MyCommand.Name.Split(".")[0] + "_INFO.txt"
+[array]$ou_list = $(Get-Content .\$info_file)
 
 # create array containing all windows servers from each OU
 $ou_list | ForEach-Object {
@@ -87,7 +88,7 @@ if(!(Test-Connection -ComputerName $SCRIPT:server_name -Count 2 -Quiet)){
 
 function Invoke-MainMenu{
     Clear-Host
-    Write-Host "`nServer: $SCRIPT:server_name ($SCRIPT:server_desc)" -BackgroundColor DarkGray
+    Write-Host "`nServer: $SCRIPT:server_name ($SCRIPT:server_desc)`n" -BackgroundColor DarkGray
     Write-Host "1. Show all services"
     Write-Host "2. Show running services"
     Write-Host "3. Show stopped services"
@@ -176,4 +177,5 @@ function Invoke-MainMenu{
 }
 
 Invoke-MainMenu
-$SCRIPT:the_service | out-host
+#$SCRIPT:the_service | out-host
+
